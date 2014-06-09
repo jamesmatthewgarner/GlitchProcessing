@@ -1,17 +1,20 @@
 PImage img, maskImage;
 
 boolean blockGlitch     = false;
-boolean linesGlitch     = true;
+boolean linesGlitch     = false;
 boolean channelShuffle  = true;
 boolean triangles       = false;
 boolean pixellate       = false;
-boolean pyramids        = true;
+boolean pyramids        = false;
 boolean colorFucked     = true;
 boolean duplicate       = false;
-boolean shapes          = true;
+boolean shapes          = false;
+boolean melting         = true;
+boolean kaleidoscope    = false;
+boolean pattern         = true;
 
 void setup() {
-  size(960, 540);
+  size(1140, 864);
   
   loadImg();
 }
@@ -45,6 +48,9 @@ void keyPressed() {
 
 void glitch() {
   
+  if (melting) {
+    glitch_melt();
+  }
   if (blockGlitch) {
     glitch_block();
   }
@@ -71,6 +77,12 @@ void glitch() {
   }
   if (shapes) {
     glitch_shapes(int(random(2, 5))); 
+  }
+  if (kaleidoscope) {
+    glitch_kaleidoscope(); 
+  }
+  if (pattern) {
+    glitch_pattern();
   }
 }
 
@@ -318,4 +330,69 @@ void star(float x, float y, float radius1, float radius2, int npoints) {
     vertex(sx, sy);
   }
   endShape(CLOSE);
+}
+
+void glitch_melt() {
+  int melts = int(random(100, width));
+  for(int j = 0; j < melts; j++) {
+    int startX = int(random(0, width));
+    int startY = int(random(0, height));
+    int meltLength = int(random(20, 70));
+    int meltWidth = int(random(3, 6));
+    color c = get(startX, startY);
+    for(int i = 0; i < meltLength; i++) {
+      for(int k = 0; k < meltWidth; k++) {
+        set(startX+k, startY+i, c); 
+      }
+    }
+  }  
+}
+
+void glitch_kaleidoscope() {
+  //determine how large the section should be
+  float start = 0;
+  float stop = random(10, 50);
+  float radianStart = radians(start);
+  float radianStop = radians(stop);
+  
+  //now that we have a section, we need to duplicate the section across the image
+  
+}
+
+void glitch_pattern() {
+  
+  int num = int(random(5, 20));
+  for(int count = 0; count < num; count++) {
+    int randX = int(random(0, width));
+    int randY = int(random(0, height));
+    int randHeight = int(random(1, height-randY));
+    int randWidth = int(random(1, width-randX));
+    
+    int[] shifts = new int[randHeight];
+    shifts[0] = 0;
+    int mostLeft = 0;
+    int mostRight = 0;
+    for(int i = 1; i < randHeight; i++) {
+      int shift = int(random(-1.5, 1.5));
+      shifts[i] = shifts[i-1] + shift;
+      if(shifts[i] < mostLeft) { mostLeft = shifts[i]; }
+      else if (shifts[i] > mostRight) { mostRight = shifts[i]; } 
+    }
+    
+    int start = int(random(0, width));
+    int stop = int(random(start, width));
+    
+    for(int inY = 0; inY < randHeight; inY++) {
+      //find the offset of this block
+      int offset = (randX +shifts[inY] ) % randWidth;
+      int counter = offset;
+      for(int x = start; x < stop; x++) {
+         color c = get(randX+(counter), randY+inY);
+         set(x, randY+inY, c);
+         counter++;
+         if (counter > randWidth) { counter = 0; }
+      }
+    }
+    
+  }
 }
