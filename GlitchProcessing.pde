@@ -2,26 +2,35 @@ PImage img, maskImage;
 
 boolean blockGlitch     = false;
 boolean linesGlitch     = false;
-boolean channelShuffle  = true;
+boolean channelShuffle  = false;
+
 boolean triangles       = false;
 boolean pixellate       = false;
 boolean pyramids        = false;
+boolean shapes          = true;
+
 boolean colorFucked     = true;
-boolean duplicate       = false;
-boolean shapes          = false;
+boolean tint            = false;
+
 boolean melting         = true;
-boolean kaleidoscope    = false;
-boolean pattern         = true;
+boolean pattern         = false;
+
+float x1 = -1, y1 = -1, x2 = -1, y2 = -1;
+boolean second = false;
+boolean dontGlitch = false;
 
 void setup() {
-  size(1140, 864);
+  int cWidth = 700;
+  int cHeight = 700;
+  size(cWidth, cHeight);
+
   
   loadImg();
 }
 
 void loadImg () {
-  img = loadImage("input.jpg");
-  maskImage = loadImage("input.jpg");
+  img = loadImage("input.png");
+  maskImage = loadImage("input.png");
   img.resize(width, height);
   img.loadPixels();
 }
@@ -30,8 +39,11 @@ void loadImg () {
   Load the image, apply the glitch, and then stop the loop so that the image is displayed for the user
   */
 void draw() {
- background(img); 
- glitch();
+ 
+ if(!dontGlitch) {
+   background(img); 
+   glitch();
+ }
  noLoop();
 }
 
@@ -39,15 +51,39 @@ void draw() {
   As soon as a key is pressed we either need to save the image, if the key pressed was space, or loop and apply a new glitch if anything else
   */
 void keyPressed() {
+  dontGlitch = false;
   if(key == 32) {
     save("output." + hour() + "." + minute() + "." + second() + ".png");
+  } else if(key == 100) {
+    duplicateMouse();
+    dontGlitch = true;
+    loop();
   } else {
     loop();
   }
 }
 
+/**
+  Need a way to get a bounding box for stuff
+  */
+void mouseClicked() {
+  if(second) {
+    x2 = mouseX;
+    y2 = mouseY;
+    second = false;
+  } else {
+    x1 = mouseX;
+    y1 = mouseY;
+    x2 = -1;
+    y2 = -1;
+    second = true;
+  }
+}
+
 void glitch() {
-  
+  if(tint) {
+    addTint();
+  }
   if (melting) {
     glitch_melt();
   }
@@ -72,14 +108,8 @@ void glitch() {
   if (colorFucked) {
     glitch_colors(int(random(-360,360)), int(random(-40,40))); 
   }
-  if (duplicate) {
-    glitch_duplicate(); 
-  }
   if (shapes) {
     glitch_shapes(int(random(2, 5))); 
-  }
-  if (kaleidoscope) {
-    glitch_kaleidoscope(); 
   }
   if (pattern) {
     glitch_pattern();
@@ -243,8 +273,6 @@ void glitch_colors(int hueShift, int satShift) {
       set(x, y, pixel);
     }
   }
-
-  
 }
 
 void addTint() {
@@ -257,23 +285,11 @@ void addTint() {
     image(img, 0, 0);
 }
 
-void glitch_duplicate() {
-  int newHeight = height*2/3;
-  int newWidth = width*2/3;
-  int x = int(random(0, width));
-  int y = int(random(0, height));
-  while(newHeight > (height/5)) {
-    //NEED TO FINISH
-    newWidth = newWidth*2/3;
-    newHeight = newHeight*2/3;  
-  }
-}
-
 void glitch_shapes(int scale) {
   noStroke();
   int shape = int(random(0, 3.9));
   int inc = 0;
-  int scale1 = scale;
+  int scale1 = 1;
   if(shape == 1 || shape == 2) { scale1 = 0; }
   if(shape == 2) { inc = 6; }
   for(int x = 0; x < width; x+= 3+inc+scale1) {
@@ -348,16 +364,6 @@ void glitch_melt() {
   }  
 }
 
-void glitch_kaleidoscope() {
-  //determine how large the section should be
-  float start = 0;
-  float stop = random(10, 50);
-  float radianStart = radians(start);
-  float radianStop = radians(stop);
-  
-  //now that we have a section, we need to duplicate the section across the image
-  
-}
 
 void glitch_pattern() {
   
@@ -395,4 +401,12 @@ void glitch_pattern() {
     }
     
   }
+}
+
+void duplicateMouse() {
+ if(!second && x2 != -1) {
+    int randX = floor(random(0, width-(abs(x1-x2))));
+    int randY = floor(random(0, height-(abs(y1-y2))));
+    copy(int(x1), int(y1), abs(int(x1-x2)), abs(int(y1-y2)), randX, randY, abs(int(x1-x2)), abs(int(y1-y2)));
+ }
 }
