@@ -1,27 +1,32 @@
 PImage img, maskImage;
 
+//clunky glitches
 boolean blockGlitch     = false;
-boolean linesGlitch     = false;
+boolean linesGlitch     = true;
 boolean channelShuffle  = false;
+boolean foldableMirror  = false; 
 
+//Incorporate some shapes
 boolean triangles       = false;
 boolean pixellate       = false;
 boolean pyramids        = false;
-boolean shapes          = true;
+boolean shapes          = false;
 
+//Colors
 boolean colorFucked     = true;
 boolean tint            = false;
 
+//Pattern creation
 boolean melting         = true;
-boolean pattern         = false;
+boolean pattern         = true;
 
 float x1 = -1, y1 = -1, x2 = -1, y2 = -1;
 boolean second = false;
 boolean dontGlitch = false;
 
 void setup() {
-  int cWidth = 700;
-  int cHeight = 700;
+  int cWidth = 1280;
+  int cHeight = 900;
   size(cWidth, cHeight);
 
   
@@ -29,8 +34,7 @@ void setup() {
 }
 
 void loadImg () {
-  img = loadImage("input.png");
-  maskImage = loadImage("input.png");
+  img = loadImage("input.bmp");
   img.resize(width, height);
   img.loadPixels();
 }
@@ -113,6 +117,9 @@ void glitch() {
   }
   if (pattern) {
     glitch_pattern();
+  }
+  if(foldableMirror) {
+    glitch_foldableMirror(); 
   }
 }
 
@@ -409,4 +416,42 @@ void duplicateMouse() {
     int randY = floor(random(0, height-(abs(y1-y2))));
     copy(int(x1), int(y1), abs(int(x1-x2)), abs(int(y1-y2)), randX, randY, abs(int(x1-x2)), abs(int(y1-y2)));
  }
+}
+
+void glitch_foldableMirror() {
+ 
+  PGraphics pg = createGraphics(width, height);
+  //Flip pg
+  pg.pushMatrix();
+  pg.scale(-1.0, 1.0);
+  pg.background(img);
+  pg.loadPixels();
+  pg.image(img, -img.width, 0);
+  pg.popMatrix();
+  //Pick number of folds
+  int numFolds = int(random(5, 10));
+  //get maximum width for a mirrored section
+  int maxWidth = int((width/(numFolds*2)));
+  //keep track of our place in the columns - choose an initial column to use.
+  int columnIterator = int(random(0, maxWidth));
+  int currFold = 0;
+  
+  while(columnIterator<width) {
+   int sectionWidth = int(random(0, maxWidth));
+   for(int x = columnIterator; x < columnIterator+sectionWidth; x++) {
+    for(int y = 0; y < height; y++) {
+     set(x, y, pg.get(x, y));
+    }
+   }
+   columnIterator += sectionWidth;
+   //Now we have moved the column iterator to the end of the area, move an additional bit
+   columnIterator += int(random(0, maxWidth));
+  }
+}
+
+void glitch_kaleidoscope() {
+ int rotateDegrees = int(random(0, 45));
+ //now have the degrees for how large the kaleidoscope section should be
+ //need to define slice of image to use for kaleidoscope
+  
 }
