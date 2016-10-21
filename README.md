@@ -1,2 +1,2 @@
 # GlitchProcessing
-Glitch experiments using Processing
+Glitch experiments using Processing (Java)
